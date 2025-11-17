@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>E-Ticket Kampus</title>
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #f8f9fa;
+      --text-color: #212529;
+      --card-bg: #ffffff;
+      --primary-color: #0d6efd;
+      --card-shadow: rgba(0, 0, 0, 0.1);
+      --hero-overlay: rgba(0, 0, 0, 0.45);
+      --muted-color: #6c757d;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0e1117;
+      --text-color: #e5e5e5;
+      --card-bg: #1c1f26;
+      --primary-color: #66b2ff;
+      --card-shadow: rgba(0, 0, 0, 0.6);
+      --hero-overlay: rgba(0, 0, 0, 0.65);
+      --muted-color: #b0b0b0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.5s ease, color 0.5s ease;
+      scroll-behavior: smooth;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: rgba(13, 110, 253, 0.9) !important;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    /* Hero Section */
+    .hero {
+      background: url("images/background-campus.jpg") center/cover no-repeat;
+      color: white;
+      text-align: center;
+      padding: 170px 20px 120px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--hero-overlay);
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      animation: fadeUp 1s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Filter Section */
+    .filter-section {
+      position: relative;
+      top: -60px;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(14px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 30px var(--card-shadow);
+      transition: all 0.4s ease;
+    }
+
+    [data-theme="dark"] .filter-section {
+      background: rgba(40, 40, 40, 0.35);
+    }
+
+    .filter-section:hover { transform: translateY(-3px); }
+
+    /* Event Card */
+    .card {
+      border: none;
+      overflow: hidden;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+      background: var(--card-bg);
+      color: var(--text-color);
+      box-shadow: 0 6px 20px var(--card-shadow);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 6px;
+      height: 100%;
+      background: linear-gradient(180deg, #0d6efd, #20c997, #ffc107, #dc3545, #6610f2);
+      background-size: 300% 300%;
+      animation: gradientFlow 5s infinite alternate;
+      border-top-left-radius: 15px;
+      border-bottom-left-radius: 15px;
+    }
+
+    @keyframes gradientFlow {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 12px 25px var(--card-shadow);
+    }
+
+    .card-img-top {
+      height: 180px;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .card:hover .card-img-top { transform: scale(1.08); }
+
+    .card-body { padding-left: 1.2rem; }
+
+    .card p.small {
+      color: var(--muted-color) !important;
+      font-size: 0.88rem;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 80px;
+      text-align: center;
+      padding: 25px;
+      font-size: 0.9rem;
+      color: #aaa;
+      background: rgba(0,0,0,0.03);
+    }
+
+    [data-theme="dark"] footer {
+      background: rgba(255,255,255,0.03);
+      color: #888;
+    }
+
+    #themeToggle {
+      border: none;
+      background: transparent;
+      color: #fff;
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #themeToggle:hover { transform: rotate(25deg); }
+
+    @media (max-width: 768px) {
+      .hero { padding: 130px 20px 90px; }
+      .filter-section { padding: 20px; top: -40px; }
+    }
+  </style>
+</head>
+
+<body data-theme="light">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#"><i class="bi bi-ticket-perforated"></i> E-Ticket Kampus</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin.html">Admin</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+          <li class="nav-item ms-3">
+            <button id="themeToggle"><i class="bi bi-moon-stars"></i></button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero d-flex justify-content-center align-items-center">
+    <div class="hero-content text-center">
+      <h1 class="fw-bold display-5">E-Ticket Kampus</h1>
+      <p class="lead">Temukan dan beli tiket event kampus dengan cepat dan mudah!</p>
+      <a href="#eventList" class="btn btn-light btn-lg mt-3 rounded-pill px-4 shadow-sm">Jelajahi Event</a>
+    </div>
+  </section>
+
+<!-- Filter Section -->
+<div class="container filter-section">
+  <div class="row g-3 justify-content-center align-items-end">
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Harga Maksimum</label>
+      <input type="number" id="filterPrice" class="form-control" placeholder="Contoh: 50000">
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Tanggal Mulai</label>
+      <input type="date" id="filterStartDate" class="form-control">
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Tanggal Akhir</label>
+      <input type="date" id="filterEndDate" class="form-control">
+    </div>
+
+    <div class="col-md-2">
+      <button id="filterBtn" class="btn btn-primary w-100 rounded-pill">Filter</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Event List -->
+  <div class="container mt-4">
+    <div id="loadingSpinner" class="text-center">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="mt-2">Memuat event...</p>
+    </div>
+    <div id="eventList" class="row g-4 mt-3"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    © 2025 E-Ticket Kampus | Designed by <strong>Jihan Salsabila</strong>
+  </footer>
+
+  <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 800, once: true });
+
+    // ==== DARK MODE TOGGLE ====
+    const toggle = document.getElementById('themeToggle');
+    const icon = toggle.querySelector('i');
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.setAttribute('data-theme', savedTheme);
+    icon.className = savedTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+
+    toggle.addEventListener('click', () => {
+      const currentTheme = document.body.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      icon.className = newTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+    });
+
+    // ==== EVENT DATA ====
+    const eventList = document.getElementById("eventList");
+    const spinner = document.getElementById("loadingSpinner");
+    let events = [];
+
+    async function loadEvents() {
+      spinner.style.display = "block";
+      try {
+        const res = await fetch("/api/events");
+        if (!res.ok) throw new Error("Gagal memuat data dari server");
+        events = await res.json();
+
+        // Pastikan tiap event punya startDate dan endDate
+        events = events.map(ev => ({
+          ...ev,
+          startDate: ev.startDate || ev.date,
+          endDate: ev.endDate || ev.date
+        }));
+
+        renderEvents(events);
+      } catch (err) {
+        console.error(err);
+        eventList.innerHTML = `<p class="text-center text-danger">Gagal memuat data event.</p>`;
+      } finally {
+        spinner.style.display = "none";
+      }
+    }
+
+    // ==== FORMAT TANGGAL ====
+    function formatTanggal(tanggal) {
+      const options = { day: 'numeric', month: 'long', year: 'numeric' };
+      return new Date(tanggal).toLocaleDateString('id-ID', options);
+    }
+
+    // ==== RENDER EVENT ====
+    function renderEvents(filteredEvents) {
+  eventList.innerHTML = "";
+  
+  if (filteredEvents.length === 0) {
+    eventList.innerHTML = '<p class="text-center text-muted">Tidak ada event ditemukan.</p>';
+    return;
+  }
+
+  filteredEvents.forEach((ev, index) => {
+    const cardHtml = `
+      <div class="col-sm-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="${index * 50}">
+        <div class="card h-100">
+          <img 
+            src="/images/${ev.id}.jpg" 
+            class="card-img-top" 
+            alt="${ev.title}"
+            onerror="this.src='/images/default.jpg'"
+            style="height: 200px; object-fit: cover;"
+          >
+          <div class="card-body">
+            <h5 class="card-title">${ev.title}</h5>
+            <p class="card-text">${ev.description || ''}</p>
+            <p class="card-text"><small class="text-muted">${formatTanggal(ev.date)}</small></p>
+            <p class="card-text fw-bold">Rp${ev.price.toLocaleString()}</p>
+            <a href="/event.html?id=${ev.id}" class="btn btn-primary w-100">Beli Tiket</a>
+          </div>
+        </div>
+      </div>
+    `;
+    eventList.innerHTML += cardHtml;
+  });
+}
+
+    // ==== FILTER EVENT (DENGAN RENTANG TANGGAL) ====
+    function filterEvents() {
+      const maxPrice = parseFloat(document.getElementById("filterPrice").value);
+      const startDateInput = document.getElementById("filterStartDate").value;
+      const endDateInput = document.getElementById("filterEndDate").value;
+
+      const startFilter = startDateInput ? new Date(startDateInput) : null;
+      const endFilter = endDateInput ? new Date(endDateInput) : null;
+
+      const filtered = events.filter(ev => {
+        const withinPrice = isNaN(maxPrice) || ev.price <= maxPrice;
+
+        // Jika tidak ada filter tanggal, hanya gunakan filter harga
+        if (!startFilter && !endFilter) return withinPrice;
+
+        const eventStart = new Date(ev.startDate);
+        const eventEnd = new Date(ev.endDate);
+
+        let withinDate = true;
+
+        // Jika hanya tanggal mulai diisi
+        if (startFilter && !endFilter) {
+          withinDate = eventEnd >= startFilter;
+        }
+        // Jika hanya tanggal akhir diisi
+        else if (!startFilter && endFilter) {
+          withinDate = eventStart <= endFilter;
+        }
+        // Jika keduanya diisi
+        else if (startFilter && endFilter) {
+          withinDate = eventEnd >= startFilter && eventStart <= endFilter;
+        }
+
+        return withinPrice && withinDate;
+      });
+
+      renderEvents(filtered);
+    }
+
+    document.getElementById("filterBtn").addEventListener("click", filterEvents);
+    loadEvents();
+  </script>
+</body>
+</html>

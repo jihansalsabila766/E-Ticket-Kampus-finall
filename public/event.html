@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Detail Event — E-Ticket Kampus</title>
+
+  <!-- Midtrans Sandbox -->
+  <script type="text/javascript"
+    src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="Mid-client-RbPZHSlGQJdL20JUno"></script>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- AOS Animation -->
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #f5f7fa;
+      --text-color: #212529;
+      --card-bg: #ffffff;
+      --primary-color: #0d6efd;
+    }
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --text-color: #f5f5f5;
+      --card-bg: #1e1e1e;
+      --primary-color: #66b2ff;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.4s ease, color 0.4s ease;
+      margin: 0;
+      padding-top: 80px;
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      background: rgba(13, 110, 253, 0.85);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      transition: background 0.3s ease;
+    }
+    .navbar.scrolled { background: rgba(13, 110, 253, 1); }
+
+    .hero { position: relative; text-align: center; color: white; overflow: hidden; }
+    .hero img {
+      width: 100%; height: 420px; object-fit: cover;
+      filter: brightness(0.5);
+      transition: transform 0.6s ease, filter 0.4s ease;
+    }
+    .hero:hover img { transform: scale(1.05); filter: brightness(0.7); }
+    .hero .overlay-text {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+    }
+    .hero h1 { font-size: 2.8rem; font-weight: 700; animation: fadeInDown 1s ease; }
+    .hero p { font-size: 1.1rem; animation: fadeIn 1.3s ease; }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0d6efd;
+      border-radius: 50%;
+      width: 40px; height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto; display: none;
+    }
+    @keyframes spin { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
+
+    #ticketCard {
+      display: none;
+      margin-top: 20px;
+      background: var(--card-bg);
+      color: var(--text-color); /* ✅ Tambahan penting */
+      transition: background 0.4s, color 0.4s;
+   }
+
+   #ticketCard h5, 
+   #ticketCard p, 
+   #ticketCard span, 
+   #ticketCard button {
+  color: var(--text-color) !important; /* ✅ Pastikan semua teks tetap terlihat */
+  }
+
+    #qrCode { margin: 10px auto; display: block; }
+
+    #themeToggle {
+      border: none;
+      background: transparent;
+      color: #fff;
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    #themeToggle:hover { transform: rotate(20deg); }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: #777;
+      transition: color 0.4s ease;
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    // Terapkan tema sebelum konten ditampilkan
+    document.body.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+  </script>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="/">
+        <i class="bi bi-ticket-perforated"></i> E-Ticket Kampus
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav align-items-center">
+          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin.html">Admin</a></li>
+          <li class="nav-item"><a class="nav-link" href="/about.html">About</a></li>
+          <li class="nav-item ms-3">
+            <button id="themeToggle" title="Toggle Dark Mode">
+              <i id="themeIcon" class="bi"></i>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <img id="heroImage" src="images/default.jpg" alt="Event Image">
+    <div class="overlay-text">
+      <h1 id="title">Memuat...</h1>
+      <p id="desc"></p>
+    </div>
+  </div>
+
+  <!-- Konten -->
+  <div class="container mt-4">
+    <div class="row align-items-start">
+      <div class="col-md-6">
+        <p><strong>🏛 Tempat:</strong> <span id="where"></span></p>
+        <p><strong>📅 Tanggal:</strong> <span id="date"></span></p>
+        <p><strong>💰 Harga:</strong> Rp<span id="price"></span></p>
+
+        <h4 class="mt-4">Beli Tiket</h4>
+        <form id="checkoutForm" class="mb-3">
+          <input class="form-control mb-2" name="buyer_name" placeholder="Nama" required>
+          <input class="form-control mb-2" name="buyer_email" placeholder="Email" required>
+          <button type="submit" class="btn btn-primary w-100">Bayar & Dapatkan QR Code</button>
+        </form>
+
+        <div class="loader" id="loader"></div>
+
+        <div class="card p-3 shadow-sm" id="ticketCard">
+          <h5>Tiket Anda:</h5>
+          <p>ID Tiket: <span id="ticketCode"></span></p>
+          <canvas id="qrCode"></canvas>
+          <div class="mt-2">
+            <button class="btn btn-success" id="copyBtn"><i class="bi bi-clipboard"></i> Copy ID</button>
+            <button class="btn btn-secondary" id="downloadBtn"><i class="bi bi-download"></i> Download QR</button>
+          </div>
+          <div class="mt-2" id="ticketStatus"></div>
+        </div>
+      </div>
+
+      <div class="col-md-6 text-center">
+        <img id="eventImage" src="images/default.jpg" class="img-fluid rounded shadow-sm" alt="Event Image">
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2025 E-Ticket Kampus | Designed by Jihan Salsabila</footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <script>
+    AOS.init();
+
+    // === DARK MODE FIX ===
+    const toggle = document.getElementById('themeToggle');
+    const icon = document.getElementById('themeIcon');
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.body.setAttribute('data-theme', currentTheme);
+    icon.className = currentTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+
+    toggle.addEventListener('click', () => {
+      const newTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      icon.className = newTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+    });
+    
+    // Ambil ID Event dari URL
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get('id');
+
+    async function loadEvent() {
+      try {
+        if (!eventId) throw new Error('Event ID tidak diberikan');
+        const res = await fetch(`/api/events/${eventId}`);
+        if (!res.ok) throw new Error('Event tidak ditemukan');
+        const event = await res.json();
+
+        document.getElementById('title').textContent = event.title;
+        document.getElementById('desc').textContent = event.description || '';
+        document.getElementById('date').textContent = event.date || '';
+        // pastikan price number sebelum toLocaleString
+        const priceNumber = Number(event.price) || 0;
+        document.getElementById('price').textContent = priceNumber.toLocaleString();
+        document.getElementById('where').textContent = event.location || '';
+        // pakai fallback bila gambar tidak ada
+        const imgPath = `images/${event.id}.jpg`;
+        document.getElementById('eventImage').src = imgPath;
+        document.getElementById('heroImage').src = imgPath;
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+     // Checkout form submit
+        const form = document.getElementById("checkoutForm");
+        const loader = document.getElementById("loader");
+        const ticketCard = document.getElementById("ticketCard");
+        const ticketCodeEl = document.getElementById("ticketCode");
+        const qrCanvas = document.getElementById("qrCode");
+        const statusDiv = document.getElementById("ticketStatus");
+
+        // helper: draw dataURL into canvas
+        function drawDataUrlToCanvas(dataUrl, canvas) {
+          return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+              const ctx = canvas.getContext('2d');
+              // clear and resize canvas to image size (square)
+              const size = 200;
+              canvas.width = size;
+              canvas.height = size;
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              // draw centered
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              resolve();
+            };
+            img.onerror = reject;
+            img.src = dataUrl;
+          });
+        }
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          if (!eventId) return alert("Event ID tidak tersedia!");
+          loader.style.display = "block";
+
+          const buyer_name = e.target.buyer_name.value;
+          const buyer_email = e.target.buyer_email.value;
+
+          try {
+            const res = await fetch("/api/checkout", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ event_id: eventId, buyer_name, buyer_email })
+            });
+
+            const data = await res.json();
+            console.log("Response server:", data);
+
+            if (!res.ok) {
+              throw new Error(data.error || "Gagal membuat transaksi");
+            }
+
+            ticketCard.style.display = "block";
+            ticketCodeEl.textContent = data.ticketId || '';
+
+            // Handle free events (server returns isFreeEvent + qrDataUrl)
+            if (data.isFreeEvent) {
+              statusDiv.innerHTML = '<span class="text-success">Tiket Gratis Berhasil Dibuat!</span>';
+              if (data.qrDataUrl) {
+                await drawDataUrlToCanvas(data.qrDataUrl, qrCanvas);
+              } else {
+                // fallback: buat QR dari validation url or ticketId
+                const validationUrl = data.validationUrl || `${location.origin}/api/validate/${data.ticketId}`;
+                await QRCode.toCanvas(qrCanvas, validationUrl, { width: 200, margin: 2 });
+              }
+              loader.style.display = "none";
+              return;
+            }
+
+            // Paid events: expect ticket created (pending) + orderId + snapToken
+            statusDiv.innerHTML = '<span class="text-warning">Menunggu pembayaran...</span>';
+
+            if (!window.snap) {
+              throw new Error("Midtrans Snap belum dimuat!");
+            }
+
+            // small helper to poll check-payment (for pending methods)
+            let pollHandle = null;
+            const startPolling = (orderId) => {
+              let tries = 0;
+              pollHandle = setInterval(async () => {
+                tries++;
+                if (tries > 12) { // ~1 minute
+                  clearInterval(pollHandle);
+                  return;
+                }
+                try {
+                  const chk = await fetch(`/api/check-payment/${orderId}`);
+                  if (!chk.ok) return;
+                  const chkData = await chk.json();
+                  if (chkData.status === 'valid' || chkData.transaction_status === 'settlement' || chkData.transaction_status === 'capture') {
+                    clearInterval(pollHandle);
+                    // tampilkan QR
+                    ticketCodeEl.textContent = chkData.ticketId || data.ticketId || '';
+                    statusDiv.innerHTML = '<span class="text-success">Pembayaran berhasil!</span>';
+                    if (chkData.qrDataUrl) {
+                      await drawDataUrlToCanvas(chkData.qrDataUrl, qrCanvas);
+                    } else {
+                      const valUrl = chkData.validationUrl || `${location.origin}/api/validate/${chkData.ticketId || data.ticketId}`;
+                      await QRCode.toCanvas(qrCanvas, valUrl, { width: 200, margin: 2 });
+                    }
+                    ticketCard.style.display = 'block';
+                  } else {
+                    // still pending
+                    statusDiv.innerHTML = '<span class="text-warning">Menunggu pembayaran...</span>';
+                  }
+                } catch (err) {
+                  console.warn('Polling error', err);
+                }
+              }, 5000);
+            };
+
+            // Launch Midtrans payment popup
+            window.snap.pay(data.snapToken || data.token || data.redirect_url, {
+              onSuccess: async function(result) {
+                // After success, ask server for final status & QR (server must update via webhook or coreApi)
+                const orderId = data.orderId || result.order_id || result.orderId;
+                statusDiv.innerHTML = '<span class="text-secondary">Memeriksa status pembayaran...</span>';
+                try {
+                  const chkRes = await fetch(`/api/check-payment/${orderId}`);
+                  const chkData = await chkRes.json();
+                  if (chkData.status === 'valid') {
+                    statusDiv.innerHTML = '<span class="text-success">Pembayaran berhasil!</span>';
+                    ticketCodeEl.textContent = chkData.ticketId || data.ticketId || '';
+                    if (chkData.qrDataUrl) {
+                      await drawDataUrlToCanvas(chkData.qrDataUrl, qrCanvas);
+                    } else {
+                      const valUrl = chkData.validationUrl || `${location.origin}/api/validate/${chkData.ticketId || data.ticketId}`;
+                      await QRCode.toCanvas(qrCanvas, valUrl, { width: 200, margin: 2 });
+                    }
+                    ticketCard.style.display = 'block';
+                  } else {
+                    // jika belum valid, mulai polling sementara
+                    startPolling(orderId);
+                    ticketCard.style.display = 'block';
+                  }
+                } catch (err) {
+                  console.error('Error checking payment after success:', err);
+                  // mulai polling sebagai fallback
+                  startPolling(orderId);
+                }
+              },
+              onPending: function(result) {
+                const orderId = data.orderId || result.order_id || result.orderId;
+                statusDiv.innerHTML = '<span class="text-warning">Menunggu pembayaran...</span>';
+                // mulai polling untuk menunggu notifikasi
+                startPolling(orderId);
+                ticketCard.style.display = 'block';
+              },
+              onError: function(result) {
+                statusDiv.innerHTML = '<span class="text-danger">Pembayaran gagal!</span>';
+                console.error('Midtrans error', result);
+              },
+              onClose: function() {
+                console.log('Customer closed the popup without finishing payment');
+              }
+            });
+
+          } catch (err) {
+            alert("Error: " + err.message);
+            console.error("Checkout error:", err);
+          } finally {
+            loader.style.display = "none";
+          }
+        });
+
+    // Copy ID Tiket
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(ticketCodeEl.textContent || '');
+      alert('ID Tiket disalin!');
+    });
+
+    // Download QR Code
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.href = qrCanvas.toDataURL();
+      link.download = `Tiket-${ticketCodeEl.textContent || 'qr'}.png`;
+      link.click();
+    });
+
+    // Tambahkan di awal script
+    async function checkPaymentStatus(orderId) {
+      try {
+        const res = await fetch(`/api/check-payment/${orderId}`);
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error('Gagal mengecek status pembayaran');
+        }
+        
+        console.log('Payment status:', data);
+
+        // server may return either "status" (valid/pending/failed) or midtrans fields
+        const txStatus = data.status || data.transaction_status || '';
+        if (txStatus === 'valid' || txStatus === 'settlement' || txStatus === 'capture') {
+          statusDiv.innerHTML = '<span class="text-success">Pembayaran berhasil!</span>';
+          
+          // Generate QR code (server should return qrDataUrl + ticketId when valid)
+          const ticketId = data.ticketId;
+          ticketCodeEl.textContent = ticketId || '';
+          if (data.qrDataUrl) {
+            await drawDataUrlToCanvas(data.qrDataUrl, qrCanvas);
+          } else {
+            const valUrl = data.validationUrl || `${location.origin}/api/validate/${ticketId}`;
+            await QRCode.toCanvas(qrCanvas, valUrl, { width: 200, margin: 2 });
+          }
+          
+          ticketCard.style.display = "block";
+        } else if (txStatus === 'pending') {
+          statusDiv.innerHTML = '<span class="text-warning">Menunggu pembayaran...</span>';
+        } else {
+          statusDiv.innerHTML = '<span class="text-danger">Pembayaran gagal/dibatalkan</span>';
+        }
+      } catch (err) {
+        console.error('Error checking payment:', err);
+        statusDiv.innerHTML = '<span class="text-danger">Error: ' + err.message + '</span>';
+      }
+    }
+
+    // Di bagian window.onload, tambahkan:
+    window.onload = async () => {
+      await loadEvent(); // Load event details first
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get('order_id');
+      const status = urlParams.get('status');
+      
+      if (orderId) {
+        loader.style.display = "block";
+        ticketCard.style.display = "block";
+        try {
+          await checkPaymentStatus(orderId);
+        } catch (err) {
+          console.error('Error:', err);
+          statusDiv.innerHTML = '<span class="text-danger">Error checking payment status</span>';
+        } finally {
+          loader.style.display = "none";
+        }
+      }
+      
+      if (status === 'error') {
+        alert('Pembayaran gagal, silakan coba lagi');
+      } else if (status === 'success') {
+        statusDiv.innerHTML = '<span class="text-success">Pembayaran berhasil!</span>';
+      }
+    };
+
+    function loadEventImage(eventId) {
+  const img = document.getElementById('eventImage');
+  img.onerror = () => {
+    // Fallback ke gambar default jika gagal load
+    img.src = '/images/default.jpg';
+  };
+  img.src = `/images/${eventId}.jpg`;
+}
+  </script>
+  <script>
+  // Terapkan tema yang disimpan
+  document.body.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+</script>
+
+</body>
+</html>

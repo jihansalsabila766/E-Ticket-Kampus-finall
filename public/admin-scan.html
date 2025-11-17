@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Validasi Tiket — E-Ticket Kampus</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body class="bg-light">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">🎟️ E-Ticket Kampus</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/admin-scan.html">Scan Tiket</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin.html">Admin</a></li>
+          <li class="nav-item"><a class="nav-link" href="/about.html">About</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Konten -->
+  <div class="container mt-4">
+    <h2>📷 Validasi Tiket Event Kampus</h2>
+    <p>Arahkan kamera ke QR Code tiket untuk cek keaslian.</p>
+
+    <!-- Area Kamera -->
+    <div id="reader" style="width:320px; margin:auto;"></div>
+
+    <!-- Hasil -->
+    <div id="result" class="alert mt-3 d-none"></div>
+
+    <!-- Log daftar tiket -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <h4>📑 Daftar Tiket Masuk</h4>
+      <div>
+        <span class="badge bg-primary me-2" id="counter">Total masuk: 0</span>
+        <input type="text" id="searchInput" class="form-control form-control-sm d-inline-block" 
+               placeholder="🔍 Cari nama/email..." style="width:200px; display:inline-block;" 
+               onkeyup="filterTable()">
+        <button class="btn btn-success btn-sm ms-2" onclick="exportCSV()">⬇️ Export CSV</button>
+      </div>
+    </div>
+    <table class="table table-bordered table-striped mt-2" id="logTable">
+      <thead class="table-light">
+        <tr>
+          <th>ID Tiket</th>
+          <th>Nama</th>
+          <th>Email</th>
+          <th>Waktu</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    let totalValid = 0;
+
+    function updateCounter() {
+      document.getElementById("counter").innerText = "Total masuk: " + totalValid;
+    }
+
+    function showResult(message, valid) {
+      const res = document.getElementById("result");
+      res.classList.remove("d-none", "alert-success", "alert-danger");
+      res.classList.add(valid ? "alert-success" : "alert-danger");
+      res.innerHTML = message;
+    }
+
+    function addLog(ticket, valid) {
+      const tbody = document.querySelector("#logTable tbody");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${ticket.id}</td>
+        <td>${ticket.buyer_name || "-"}</td>
+        <td>${ticket.buyer_email || "-"}</td>
+        <td>${new Date().toLocaleString()}</td>
+        <td class="${valid ? "text-success" : "text-danger"}">
+          ${valid ? "VALID" : "INVALID"}
+        </td>
+      `;
+      tbody.prepend(tr);
+
+      if (valid) {
+        totalValid++;
+        updateCounter();
+      }
+    }
+
+    function onScanSuccess(decodedText) {
+      fetch(decodedText)
+        .then(r => r.json())
+        .then(data => {
+          if (data.valid) {
+            showResult("✅ Tiket valid! ID: " + data.ticket.id, true);
+            addLog(data.ticket, true);
+          } else {
+            showResult("❌ Tiket tidak valid atau sudah dipakai.", false);
+            addLog({id: decodedText.split("/").pop()}, false);
+          }
+        })
+        .catch(err => showResult("❌ Gagal validasi: " + err, false));
+    }
+
+    // Export log ke CSV
+    function exportCSV() {
+      const rows = [];
+      const table = document.querySelector("#logTable");
+      const trs = table.querySelectorAll("tr");
+
+      trs.forEach(tr => {
+        const cells = tr.querySelectorAll("th, td");
+        const row = [];
+        cells.forEach(cell => row.push(cell.innerText));
+        rows.push(row.join(","));
+      });
+
+      const csvContent = "data:text/csv;charset=utf-8," + rows.join("\n");
+      const link = document.createElement("a");
+      link.setAttribute("href", encodeURI(csvContent));
+      link.setAttribute("download", "log_tiket.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Filter pencarian + highlight
+    function filterTable() {
+      const input = document.getElementById("searchInput");
+      const filter = input.value.toLowerCase();
+      const rows = document.querySelectorAll("#logTable tbody tr");
+
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        if (filter && text.includes(filter)) {
+          row.style.display = "";
+          row.classList.add("table-warning"); // highlight kuning
+        } else {
+          row.style.display = filter && !text.includes(filter) ? "none" : "";
+          row.classList.remove("table-warning");
+        }
+      });
+    }
+
+    // Jalankan scanner kamera
+    const html5QrCode = new Html5Qrcode("reader");
+    Html5Qrcode.getCameras().then(cameras => {
+      if (cameras.length) {
+        html5QrCode.start(
+          cameras[0].id,
+          { fps: 10, qrbox: 250 },
+          onScanSuccess
+        );
+      }
+    });
+  </script>
+</body>
+</html>
