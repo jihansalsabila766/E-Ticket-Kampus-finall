@@ -45,12 +45,18 @@ if (!fs.existsSync(dbFolder)) {
   fs.mkdirSync(dbFolder, { recursive: true });
 }
 
-// Koneksi database
-const dbPath = path.join(dbFolder, 'tickets.db');
+// Railway writable directory
+const dbPath = process.env.DB_PATH || "/data/tickets.db";
 
 console.log("Database disimpan di:", dbPath);
 
-const db = new sqlite3.Database(dbPath);
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error("❌ Gagal membuka database:", err);
+  } else {
+    console.log("✅ Database berhasil dibuka / dibuat:", dbPath);
+  }
+});
 
 // ================== CREATE TABLE ==================
 db.serialize(() => {
