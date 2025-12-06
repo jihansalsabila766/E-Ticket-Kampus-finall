@@ -39,24 +39,30 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Pastikan folder db ada
-const dbFolder = process.env.DB_DIR || path.join(__dirname, 'db');
-if (!fs.existsSync(dbFolder)) {
-  fs.mkdirSync(dbFolder, { recursive: true });
+// -----------------------------------------------------
+//              DATABASE FIX FOR RAILWAY
+// -----------------------------------------------------
+
+// Railway menyimpan data persisten di /mnt/data
+const dbDir = "/mnt/data";
+
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+  console.log("📁 Folder /mnt/data dibuat.");
 }
 
-// Railway writable directory (FIX TRUE)
-const dbPath = process.env.DB_PATH || path.join("/mnt/data", "tickets.db");
-
+const dbPath = path.join(dbDir, "tickets.db");
 console.log("Database disimpan di:", dbPath);
 
+// Membuat koneksi SQLite
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error("❌ Gagal membuka database:", err);
   } else {
-    console.log("✅ Database berhasil dibuka / dibuat:", dbPath);
+    console.log("✅ Database berhasil dibuka!");
   }
 });
+
 
 // ================== CREATE TABLE ==================
 db.serialize(() => {
