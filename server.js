@@ -17,6 +17,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Pastikan folder images ada
@@ -38,13 +40,16 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Pastikan folder db ada
-const dbFolder = path.join(__dirname, 'db');
+const dbFolder = process.env.DB_DIR || path.join(__dirname, 'db');
 if (!fs.existsSync(dbFolder)) {
-  fs.mkdirSync(dbFolder);
+  fs.mkdirSync(dbFolder, { recursive: true });
 }
 
 // Koneksi database
 const dbPath = path.join(dbFolder, 'tickets.db');
+
+console.log("Database disimpan di:", dbPath);
+
 const db = new sqlite3.Database(dbPath);
 
 // ================== CREATE TABLE ==================
@@ -427,6 +432,14 @@ app.get('/api/validate/:ticketId', (req, res) => {
     res.json(row);
   });
 });
+
+// Download database
+app.get('/download-db', (req, res) => {
+  res.download(dbPath, "tickets.db", err => {
+    if (err) res.status(500).send("Gagal download DB");
+  });
+});
+
 
 // ---------------- Start server ----------------
 app.listen(PORT, () => {
