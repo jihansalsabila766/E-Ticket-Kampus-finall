@@ -45,8 +45,8 @@ if (!fs.existsSync(dbFolder)) {
   fs.mkdirSync(dbFolder, { recursive: true });
 }
 
-// Railway writable directory
-const dbPath = process.env.DB_PATH || "/data/tickets.db";
+// Railway writable directory (FIX TRUE)
+const dbPath = process.env.DB_PATH || path.join("/mnt/data", "tickets.db");
 
 console.log("Database disimpan di:", dbPath);
 
