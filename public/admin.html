@@ -336,17 +336,29 @@
 
   <!-- Script -->
   <script>
+
+    // Cek login admin
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) {
+      alert('Silakan login terlebih dahulu!');
+      window.location.href = 'login.html';
+    }
+
+   const BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:3000"
+      : window.location.origin;
+
     const eventTableBody = document.getElementById("eventTableBody");
     const ticketTableBody = document.getElementById("ticketTableBody");
     const createEventForm = document.getElementById("createEventForm");
     const editEventForm = document.getElementById("editEventForm");
     const searchInput = document.getElementById("searchInput");
-    const filterStart = document.getElementById("filterStart");
-    const filterEnd = document.getElementById("filterEnd");
+    const filterDate = document.getElementById("filterDate");
     let eventsCache = [];
 
     async function loadEvents() {
-      const res = await fetch("http://localhost:3000/api/events");
+      const res = await fetch(`${BASE_URL}/api/events`);
       const events = await res.json();
       eventsCache = events;
       renderEvents(events);
@@ -386,14 +398,16 @@
 
     async function deleteEvent(id) {
       if (!confirm("Yakin ingin menghapus event ini?")) return;
-      await fetch(`http://localhost:3000/api/events/${id}`, { method: 'DELETE' });
+      await fetch(`${BASE_URL}/api/events/${id}`, { method: 'DELETE' });
       loadEvents();
     }
 
+    // 🔹 View Tickets
     async function viewTickets(eventId, title) {
-      const res = await fetch(`http://localhost:3000/api/events/${eventId}/tickets`);
+      const res = await fetch(`${BASE_URL}/api/events/${eventId}/tickets`);
       const tickets = await res.json();
       const ticketsModal = new bootstrap.Modal(document.getElementById('ticketsModal'));
+
       document.getElementById('ticketsModalLabel').textContent = `Daftar Pembeli Tiket (${title})`;
 
       ticketTableBody.innerHTML = tickets.length === 0
@@ -410,20 +424,27 @@
       ticketsModal.show();
     }
 
+    // 🔹 Export CSV
     function exportCSV(tickets, title) {
       if (tickets.length === 0) return alert("Tidak ada data untuk diexport.");
-      const rows = tickets.map(t => [t.buyer_name, t.buyer_email, t.status, new Date(t.created_at).toLocaleString()]);
-      const csvContent = "data:text/csv;charset=utf-8," +
-        ["Nama,Email,Status,Dibuat", ...rows.map(r => r.join(","))].join("\n");
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `tiket_${title}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
 
+      const rows = tickets.map(t => [
+       t.buyer_name,
+       t.buyer_email,
+       t.status,
+       new Date(t.created_at).toLocaleString()
+    ]);
+
+      const csvContent = "data:text/csv;charset=utf-8," +
+       ["Nama,Email,Status,Dibuat", ...rows.map(r => r.join(","))].join("\n");
+
+      const link = document.createElement("a");
+      link.href = encodeURI(csvContent);
+      link.download = `tiket_${title}.csv`;
+      link.click();
+  }
+
+   // 🔹 Create Event
     createEventForm.addEventListener("submit", async e => {
       e.preventDefault();
       const form = e.target;
@@ -434,7 +455,7 @@
         price: parseInt(form.price.value),
         description: form.description.value
       };
-      await fetch('http://localhost:3000/api/events', {
+      await fetch(`${BASE_URL}/api/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -445,7 +466,7 @@
     });
 
     async function openEditModal(id) {
-      const res = await fetch(`http://localhost:3000/api/events/${id}`);
+      const res = await fetch(`${BASE_URL}/api/events/${id}`);
       const ev = await res.json();
       editEventForm.id.value = ev.id;
       editEventForm.title.value = ev.title;
@@ -467,7 +488,7 @@
         price: parseInt(form.price.value),
         description: form.description.value
       };
-      await fetch(`http://localhost:3000/api/events/${id}`, {
+      await fetch(`${BASE_URL}/api/events/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -508,13 +529,6 @@
   <script>AOS.init();</script>
 
   <script>
-  // === Cek login ===
-  const adminToken = localStorage.getItem('adminToken');
-  if (!adminToken) {
-    alert('Silakan login terlebih dahulu!');
-    window.location.href = 'login.html';
-  }
-
   // === Logout ===
   document.getElementById('logoutBtn').addEventListener('click', () => {
     if (confirm('Yakin ingin logout?')) {
